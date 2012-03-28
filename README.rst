@@ -7,8 +7,11 @@ How to install
 --------------
 
     git clone git+https://github.com/Fandekasp/TrelloBot.git#egg=TrelloBot
+
     cd TrelloBot
+
     vim local_settings.py  # and add your settings
+
     ./ticketbot.py
 
 
