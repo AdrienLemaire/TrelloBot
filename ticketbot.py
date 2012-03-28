@@ -2,16 +2,22 @@
 The card bot for Trello
 Inspired from django-cardbot
 """
+import sys
+import re
 
 from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
 from twisted.python import log
 
-import os
-import sys
-import re
+try:
+    #Make a symbolic link name "local_settings.py" with the settings
+    from local_settings import *  # NOQA
+except ImportError:
+    import warnings
+    warnings.warn('You should create a local_settings.py')
+except Exception, e:
+    raise Exception(e)
 
-ORGANIZATION = 'OrganizationName'
 
 card_re = re.compile(r'(?<!build)(?:^|\s)#(\d+)')
 card_url = "https://trello.com/card/1/%s/%s"
@@ -24,8 +30,8 @@ class TicketBot(irc.IRCClient):
     """A bot for URLifying Trello boards and cards"""
 
     nickname = "trellobot"
-    password = os.environ['NICKSERV_PASS']
-    channels = os.environ['CHANNELS'].split(',')
+    password = NICKSERV_PASS
+    channels = CHANNELS
 
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
