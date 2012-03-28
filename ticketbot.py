@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 The card bot for Trello
 Inspired from django-cardbot
@@ -15,15 +17,15 @@ try:
 except ImportError:
     import warnings
     warnings.warn('You should create a local_settings.py')
-except Exception, e:
-    raise Exception(e)
+except Exception as e:
+    raise e
 
 
-card_re = re.compile(r'(?<!build)(?:^|\s)#(\d+)')
+card_re = re.compile(r'#(\d+)')
 card_url = "https://trello.com/card/1/%s/%s"
 
-board_re = re.compile(r'\br(\d+)\b')
-board_url = "https://trello.com/board/%s/%s"
+board_re = re.compile(r'@(\w+)')
+board_url = "https://trello.com/board/1/%s"
 
 
 class TicketBot(irc.IRCClient):
@@ -51,6 +53,8 @@ class TicketBot(irc.IRCClient):
         user = user.split('!', 1)[0]
         cards = card_re.findall(msg)
         boards = board_re.findall(msg)
+        if boards:
+            board_id = BOARDS[boards[0]]
 
         # Check to see if they're sending me a private message
         if channel == self.nickname:
@@ -68,9 +72,9 @@ class TicketBot(irc.IRCClient):
         for card in set(cards):
             if int(card) in blacklist:
                 continue
-            self.msg(target, card_url % card, board)
-        for board in set(boards):
-            self.msg(target, board_url % board)
+            self.msg(target, card_url % (board_id, card))
+        if not card and board_id:
+            self.msg(target, board_url % board_id)
         return
 
 
@@ -88,13 +92,17 @@ class TicketBotFactory(protocol.ClientFactory):
         connector.connect()
 
     def clientConnectionFailed(self, connector, reason):
-        print "connection failed:", reason
+        print("connection failed: {}".format(reason))
         reactor.stop()
 
 
 if __name__ == '__main__':
     # initialize logging
     log.startLogging(sys.stdout)
+
+    # Add variables to environ
+    #os.environ['TRELLO_API_KEY'] = TRELLO_API_KEY
+    #os.environ['TRELLO_TOKEN'] = TRELLO_TOKEN
 
     # create factory protocol and application
     f = TicketBotFactory()

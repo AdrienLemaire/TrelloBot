@@ -1,0 +1,5 @@
+twisted
+httplib2
+    #py-trello
+
+-e git+https://github.com/sarumont/py-trello.git#egg=pytrello
